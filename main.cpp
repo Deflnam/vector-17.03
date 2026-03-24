@@ -41,7 +41,6 @@ bool testElementInboudAccess()
   {
     return false;
   }
-
 }
 
 bool testElementOutOfBoundAccess()
@@ -60,7 +59,6 @@ bool testElementOutOfBoundAccess()
   {
     return false;
   }
-
 }
 
 bool testElementInboudConstAccess()
@@ -77,9 +75,7 @@ bool testElementInboudConstAccess()
   {
     return false;
   }
-
 }
-
 
 bool testElementOutOfBoundConstAccess()
 {
@@ -97,6 +93,13 @@ bool testElementOutOfBoundConstAccess()
   {
     return false;
   }
+}
+
+bool testCopyConstructor()
+{
+  topit::Vector< int > v;
+  topit::Vector< int > yav(v);
+  return v == yav;
 }
 
 int main()
@@ -120,7 +123,6 @@ int main()
     pass = pass && res;
   }
   std::cout << "RESULT: " << pass << "\n";
-
   // Подсчет количества пройденных/!пройденный  тестов 
   //Вывод только непрошедшие тесты
 }

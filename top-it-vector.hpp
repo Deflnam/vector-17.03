@@ -8,10 +8,10 @@ namespace topit
   {
     ~Vector();
     Vector();
-    Vector(const Vector&);
-    Vector(Vector&&);
-    Vector& operator=(const Vector&);
-    Vector& operator=(Vector&&);
+    Vector(const Vector< T >&);
+    Vector(Vector< T >&&);
+    Vector< T >& operator=(const Vector< T >&);
+    Vector< T >& operator=(Vector< T >&&);
 
     bool isEmpty() const noexcept;
     size_t getSize() const noexcept;
@@ -26,6 +26,9 @@ namespace topit
     void popBack();
     void insert(size_t i, const T& v);
     void erase(size_t i);
+
+    template< class T >
+    bool operator==(const Vector< T >& lhs, const Vector< T > & rhs);
 
   private:
     T* data_;
@@ -42,6 +45,10 @@ topit::Vector< T >::~Vector()
 template< class T >
 topit::Vector< T >::Vector():
   data_(nullptr), size_(0), capacity_(0)
+{}
+
+template< class T >
+topit::Vector< T >::Vector(const Vector< T > & rhs)
 {}
 
 template< class T >

@@ -1,145 +1,104 @@
 #include <iostream>
 #include <iomanip>
+#include <stdexcept>
+
 #include "top-it-vector.hpp"
 
-bool testEmptyVector()
-{
-  // std::cout << __func__ << "\n";
-  topit::Vector< int > v;
-  return v.isEmpty();
-}
+namespace {
 
-bool testGetSize()
-{
-  topit::Vector< int > v;
-  v.pushBack(1);
-  v.pushBack(2);
-  v.pushBack(3);
-  v.popBack();
-  return v.getSize() == 2;
-}
+  bool testEmptyVector()
+  {
+    const topit::Vector< int > v;
+    return v.isEmpty();
+  }
 
-bool testGetCapacity()
-{
-  topit::Vector< int > v;
-  v.pushBack(1);
-  v.pushBack(2);
-  v.pushBack(3);
-  return v.getCapacity() == 4;
-}
+  bool testGetSize()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.popBack();
+    return v.getSize() == 2;
+  }
 
-bool testElementInboudAccess()
-{
-  topit::Vector< int > v;
-  v.pushBack(1);
-  try
+  bool testGetCapacity()
   {
-    int & val = v.at(0);
-    return val == 1;
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    return v.getCapacity() == 4;
   }
-  catch (...)
-  {
-    return false;
-  }
-}
 
-bool testElementOutOfBoundAccess()
-{
-  topit::Vector< int > v;
-  try
+  bool testElementInboundAccess()
   {
-    v.at(0);
-    return false;
+    topit::Vector< int > v;
+    v.pushBack(1);
+    try {
+      const int & val = v.at(0);
+      return val == 1;
+    } catch (...) {
+      return false;
+    }
   }
-  catch(const std::out_of_range &)
-  {
-    return true;
-  }
-  catch (...)
-  {
-    return false;
-  }
-}
 
-bool testElementInboudConstAccess()
-{
-  topit::Vector< int > v;
-  v.pushBack(1);
-  const topit::Vector< int > & rv = v;
-  try
+  bool testElementOutOfBoundAccess()
   {
-    const int & val = rv.at(0);
-    return val == 1;
+    topit::Vector< int > v;
+    try {
+      v.at(0);
+      return false;
+    } catch (const std::out_of_range &) {
+      return true;
+    } catch (...) {
+      return false;
+    }
   }
-  catch (...)
-  {
-    return false;
-  }
-}
 
-bool testElementOutOfBoundConstAccess()
-{
-  const topit::Vector< int > v;
-  try
+  bool testElementInboundConstAccess()
   {
-    v.at(0);
-    return false;
+    topit::Vector< int > v;
+    v.pushBack(1);
+    const topit::Vector< int > & rv = v;
+    try {
+      const int & val = rv.at(0);
+      return val == 1;
+    } catch (...) {
+      return false;
+    }
   }
-  catch(const std::out_of_range &)
-  {
-    return true;
-  }
-  catch (...)
-  {
-    return false;
-  }
-}
 
-bool testCopyConstructorForEmpty()
-{
-  topit::Vector< int > v;
-  topit::Vector< int > yav(v);
-  return v == yav;
-}
+  bool testElementOutOfBoundConstAccess()
+  {
+    const topit::Vector< int > v;
+    try {
+      v.at(0);
+      return false;
+    } catch (const std::out_of_range &) {
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }
 
-bool testCopyConstructorForNonEmpty()
-{
-  topit::Vector< int > v;
-  v.pushBack(1);
-  topit::Vector< int > yav = v;
-  try
+  bool testCopyConstructorForEmpty()
   {
-    return yav.getSize() == v.getSize() && yav.at(0) == v.at(0);
+    const topit::Vector< int > v;
+    const topit::Vector< int > copy(v);
+    return v == copy;
   }
-  catch(...)
-  {
-    return false;
-  }
-}
 
-int main()
-{
-  using test_t = std::pair< const char *, bool(*)() >;
-  test_t tests[] = {
-    { "Empty vector", testEmptyVector },
-    { "Size of vector", testGetSize },
-    { "Capacity of vector", testGetCapacity },
-    { "Inbound access", testElementInboudAccess },
-    { "Out of bound access", testElementOutOfBoundAccess },
-    { "Inbound const access", testElementInboudConstAccess },
-    { "Out of bound const access", testElementOutOfBoundConstAccess },
-    { "Copy empty vector", testCopyConstructorForEmpty },
-    { "Copy non-empty vector", testCopyConstructorForNonEmpty }
-  };
-  const size_t count = sizeof(tests) / sizeof(test_t);
-  bool pass = true;
-  for (size_t i = 0; i < count; ++i)
+  bool testCopyConstructorForNonEmpty()
   {
-    bool res = tests[i].second();
-    std::cout << tests[i].first << ": " << res << "\n";
-    pass = pass && res;
+    topit::Vector< int > v;
+    v.pushBack(1);
+    const topit::Vector< int > copy = v;
+    try {
+      return copy.getSize() == v.getSize()
+          && copy.at(0) == v.at(0);
+    } catch (...) {
+      return false;
+    }
   }
-  std::cout << "RESULT: " << pass << "\n";
-  // Подсчёт кол-ва пройденных / непройденных тестов
-  // Выводить только непрошедшие тесты
 }

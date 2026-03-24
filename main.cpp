@@ -1,10 +1,10 @@
-#include <iostream>
+\#include <iostream>
 #include <iomanip>
 #include "top-it-vector.hpp"
 
 bool testEmptyVector()
 {
-  //std::cout<<__func__<<"\n";
+  // std::cout << __func__ << "\n";
   topit::Vector< int > v;
   return v.isEmpty();
 }
@@ -28,17 +28,16 @@ bool testGetCapacity()
   return v.getCapacity() == 4;
 }
 
-bool testElementInBoundAccess()
+bool testElementInboudAccess()
 {
-  topit::Vector<int> v;
+  topit::Vector< int > v;
   v.pushBack(1);
   try
   {
-  int & val = v.at(0);
-  return val == 1;
+    int & val = v.at(0);
+    return val == 1;
   }
-
-  catch(...)
+  catch (...)
   {
     return false;
   }
@@ -47,18 +46,34 @@ bool testElementInBoundAccess()
 
 bool testElementOutOfBoundAccess()
 {
-  topit::Vector<int> v;
+  topit::Vector< int > v;
   try
   {
     v.at(0);
     return false;
   }
-
   catch(const std::out_of_range &)
   {
     return true;
   }
-  catch(...)
+  catch (...)
+  {
+    return false;
+  }
+
+}
+
+bool testElementInboudConstAccess()
+{
+  topit::Vector< int > v;
+  v.pushBack(1);
+  const topit::Vector< int > & rv = v;
+  try
+  {
+    const int & val = rv.at(0);
+    return val == 1;
+  }
+  catch (...)
   {
     return false;
   }
@@ -66,16 +81,35 @@ bool testElementOutOfBoundAccess()
 }
 
 
+bool testElementOutOfBoundConstAccess()
+{
+  const topit::Vector< int > v;
+  try
+  {
+    v.at(0);
+    return false;
+  }
+  catch(const std::out_of_range &)
+  {
+    return true;
+  }
+  catch (...)
+  {
+    return false;
+  }
+}
+
 int main()
 {
   using test_t = std::pair< const char *, bool(*)() >;
   test_t tests[] = {
     { "Empty vector", testEmptyVector },
     { "Size of vector", testGetSize },
-    { "Capacity of vector", testGetCapacity},
-    {"Inbound access", testElementInBoundAccess},
-    {"Out of Bound",testElementOutOfBoundAccess}
-
+    { "Capacity of vector", testGetCapacity },
+    { "Inbound access", testElementInboudAccess },
+    { "Out of bound access", testElementOutOfBoundAccess },
+    { "Inbound const access", testElementInboudConstAccess },
+    { "Out of bound const access", testElementOutOfBoundConstAccess }
   };
   const size_t count = sizeof(tests) / sizeof(test_t);
   bool pass = true;
@@ -89,5 +123,4 @@ int main()
 
   // Подсчет количества пройденных/!пройденный  тестов 
   //Вывод только непрошедшие тесты
-
 }

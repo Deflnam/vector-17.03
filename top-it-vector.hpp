@@ -4,12 +4,194 @@
 #include <cstddef>
 #include <stdexcept>
 #include <algorithm>
+#include <iterator>
 
 namespace topit {
 
 template <class T>
 class Vector {
 public:
+    // Итераторы
+    struct Iterator {
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = T*;
+        using reference = T&;
+
+        explicit Iterator(pointer ptr) noexcept : ptr_(ptr) {}
+
+        reference operator*() const noexcept { return *ptr_; }
+        pointer operator->() const noexcept { return ptr_; }
+
+        Iterator& operator++() noexcept {
+            ++ptr_;
+            return *this;
+        }
+
+        Iterator operator++(int) noexcept {
+            Iterator tmp(*this);
+            ++ptr_;
+            return tmp;
+        }
+
+        Iterator& operator--() noexcept {
+            --ptr_;
+            return *this;
+        }
+
+        Iterator operator--(int) noexcept {
+            Iterator tmp(*this);
+            --ptr_;
+            return tmp;
+        }
+
+        Iterator& operator+=(difference_type n) noexcept {
+            ptr_ += n;
+            return *this;
+        }
+
+        Iterator& operator-=(difference_type n) noexcept {
+            ptr_ -= n;
+            return *this;
+        }
+
+        Iterator operator+(difference_type n) const noexcept {
+            return Iterator(ptr_ + n);
+        }
+
+        Iterator operator-(difference_type n) const noexcept {
+            return Iterator(ptr_ - n);
+        }
+
+        difference_type operator-(const Iterator& rhs) const noexcept {
+            return ptr_ - rhs.ptr_;
+        }
+
+        reference operator[](difference_type n) const noexcept {
+            return ptr_[n];
+        }
+
+        bool operator==(const Iterator& rhs) const noexcept {
+            return ptr_ == rhs.ptr_;
+        }
+
+        bool operator!=(const Iterator& rhs) const noexcept {
+            return ptr_ != rhs.ptr_;
+        }
+
+        bool operator<(const Iterator& rhs) const noexcept {
+            return ptr_ < rhs.ptr_;
+        }
+
+        bool operator>(const Iterator& rhs) const noexcept {
+            return ptr_ > rhs.ptr_;
+        }
+
+        bool operator<=(const Iterator& rhs) const noexcept {
+            return ptr_ <= rhs.ptr_;
+        }
+
+        bool operator>=(const Iterator& rhs) const noexcept {
+            return ptr_ >= rhs.ptr_;
+        }
+
+    private:
+        pointer ptr_;
+    };
+
+    struct ConstIterator {
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const T*;
+        using reference = const T&;
+
+        explicit ConstIterator(pointer ptr) noexcept : ptr_(ptr) {}
+        ConstIterator(const Iterator& it) noexcept : ptr_(&(*it)) {}
+
+        reference operator*() const noexcept { return *ptr_; }
+        pointer operator->() const noexcept { return ptr_; }
+
+        ConstIterator& operator++() noexcept {
+            ++ptr_;
+            return *this;
+        }
+
+        ConstIterator operator++(int) noexcept {
+            ConstIterator tmp(*this);
+            ++ptr_;
+            return tmp;
+        }
+
+        ConstIterator& operator--() noexcept {
+            --ptr_;
+            return *this;
+        }
+
+        ConstIterator operator--(int) noexcept {
+            ConstIterator tmp(*this);
+            --ptr_;
+            return tmp;
+        }
+
+        ConstIterator& operator+=(difference_type n) noexcept {
+            ptr_ += n;
+            return *this;
+        }
+
+        ConstIterator& operator-=(difference_type n) noexcept {
+            ptr_ -= n;
+            return *this;
+        }
+
+        ConstIterator operator+(difference_type n) const noexcept {
+            return ConstIterator(ptr_ + n);
+        }
+
+        ConstIterator operator-(difference_type n) const noexcept {
+            return ConstIterator(ptr_ - n);
+        }
+
+        difference_type operator-(const ConstIterator& rhs) const noexcept {
+            return ptr_ - rhs.ptr_;
+        }
+
+        reference operator[](difference_type n) const noexcept {
+            return ptr_[n];
+        }
+
+        bool operator==(const ConstIterator& rhs) const noexcept {
+            return ptr_ == rhs.ptr_;
+        }
+
+        bool operator!=(const ConstIterator& rhs) const noexcept {
+            return ptr_ != rhs.ptr_;
+        }
+
+        bool operator<(const ConstIterator& rhs) const noexcept {
+            return ptr_ < rhs.ptr_;
+        }
+
+        bool operator>(const ConstIterator& rhs) const noexcept {
+            return ptr_ > rhs.ptr_;
+        }
+
+        bool operator<=(const ConstIterator& rhs) const noexcept {
+            return ptr_ <= rhs.ptr_;
+        }
+
+        bool operator>=(const ConstIterator& rhs) const noexcept {
+            return ptr_ >= rhs.ptr_;
+        }
+
+    private:
+        pointer ptr_;
+    };
+
+    using iterator = Iterator;
+    using const_iterator = ConstIterator;
+
     ~Vector();
     Vector();
     Vector(const Vector& rhs);
@@ -20,17 +202,28 @@ public:
     Vector& operator=(const Vector& rhs);
     Vector& operator=(Vector&& rhs) noexcept;
 
+  
     void swap(Vector& rhs) noexcept;
 
     bool isEmpty() const noexcept;
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
 
+    // Доступ к элементам
     T& operator[](size_t id) noexcept;
     const T& operator[](size_t id) const noexcept;
     T& at(size_t id);
     const T& at(size_t id) const;
 
+    // Итераторы
+    iterator begin() noexcept;
+    iterator end() noexcept;
+    const_iterator begin() const noexcept;
+    const_iterator end() const noexcept;
+    const_iterator cbegin() const noexcept;
+    const_iterator cend() const noexcept;
+
+    // Основные операции
     void pushBack(const T& v);
     void popBack();
     void insert(size_t i, const T& v);
@@ -39,6 +232,10 @@ public:
     // Классная работа: методы работы с диапазонами
     void insert(size_t i, const Vector& rhs, size_t start, size_t end);
     void erase(size_t start, size_t end);
+
+    // Домашка: итераторный insert
+    template <class FwdIterator>
+    void insert(iterator pos, FwdIterator first, FwdIterator last);
 
 private:
     T* data_;
@@ -52,7 +249,7 @@ private:
 template <class T>
 bool operator==(const Vector<T>& lhs, const Vector<T>& rhs);
 
-}  
+} 
 
 template <class T>
 topit::Vector<T>::Vector()
@@ -241,6 +438,43 @@ void topit::Vector<T>::erase(size_t i)
     --size_;
 }
 
+// Итераторы
+template <class T>
+typename topit::Vector<T>::iterator topit::Vector<T>::begin() noexcept
+{
+    return iterator(data_);
+}
+
+template <class T>
+typename topit::Vector<T>::iterator topit::Vector<T>::end() noexcept
+{
+    return iterator(data_ + size_);
+}
+
+template <class T>
+typename topit::Vector<T>::const_iterator topit::Vector<T>::begin() const noexcept
+{
+    return const_iterator(data_);
+}
+
+template <class T>
+typename topit::Vector<T>::const_iterator topit::Vector<T>::end() const noexcept
+{
+    return const_iterator(data_ + size_);
+}
+
+template <class T>
+typename topit::Vector<T>::const_iterator topit::Vector<T>::cbegin() const noexcept
+{
+    return const_iterator(data_);
+}
+
+template <class T>
+typename topit::Vector<T>::const_iterator topit::Vector<T>::cend() const noexcept
+{
+    return const_iterator(data_ + size_);
+}
+
 // Классная работа: вставка диапазона из другого вектора
 template <class T>
 void topit::Vector<T>::insert(size_t i, const Vector& rhs, size_t start, size_t end)
@@ -286,6 +520,34 @@ void topit::Vector<T>::erase(size_t start, size_t end)
     size_ -= count;
 }
 
+// Домашка: вставка диапазона из произвольного итератора
+template <class T>
+template <class FwdIterator>
+void topit::Vector<T>::insert(iterator pos, FwdIterator first, FwdIterator last)
+{
+    size_t index = static_cast<size_t>(pos - begin());
+    if (index > size_) {
+        throw std::out_of_range("Vector::insert iterator: position out of range");
+    }
+    size_t count = static_cast<size_t>(std::distance(first, last));
+    if (count == 0) {
+        return;
+    }
+
+    Vector tmp(size_ + count);
+    for (size_t k = 0; k < index; ++k) {
+        tmp.data_[k] = std::move(data_[k]);
+    }
+    size_t j = index;
+    for (FwdIterator it = first; it != last; ++it, ++j) {
+        tmp.data_[j] = *it;
+    }
+    for (size_t k = index; k < size_; ++k, ++j) {
+        tmp.data_[j] = std::move(data_[k]);
+    }
+    swap(tmp);
+}
+
 template <class T>
 bool topit::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
 {
@@ -300,4 +562,4 @@ bool topit::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
     return true;
 }
 
-#endif 
+#endif  

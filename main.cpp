@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdexcept>
+#include <vector>
 #include "top-it-vector.hpp"
 
 bool testEmptyVector()
@@ -215,7 +216,7 @@ bool testEraseOutOfRange()
     }
 }
 
-//Тесты диапазонов (классная работа) 
+// Тесты диапазонов (классная работа) 
 
 bool testInsertRangeAtBegin()
 {
@@ -341,7 +342,119 @@ bool testEraseRangeBadRange()
     }
 }
 
-// Тесты строгой гарантии 
+// Тесты итераторов (домашка) 
+
+bool testIteratorInsertAtBegin()
+{
+    topit::Vector<int> v;
+    v.pushBack(2);
+    v.pushBack(3);
+    std::vector<int> src = {1};
+    v.insert(v.begin(), src.begin(), src.end());
+    return v.getSize() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3;
+}
+
+bool testIteratorInsertAtMiddle()
+{
+    topit::Vector<int> v;
+    v.pushBack(1);
+    v.pushBack(3);
+    std::vector<int> src = {2};
+    v.insert(v.begin() + 1, src.begin(), src.end());
+    return v.getSize() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3;
+}
+
+bool testIteratorInsertAtEnd()
+{
+    topit::Vector<int> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    std::vector<int> src = {3};
+    v.insert(v.end(), src.begin(), src.end());
+    return v.getSize() == 3 && v[0] == 1 && v[1] == 2 && v[2] == 3;
+}
+
+bool testIteratorInsertMultiple()
+{
+    topit::Vector<int> v;
+    v.pushBack(1);
+    v.pushBack(5);
+    std::vector<int> src = {2, 3, 4};
+    v.insert(v.begin() + 1, src.begin(), src.end());
+    return v.getSize() == 5
+        && v[0] == 1 && v[1] == 2 && v[2] == 3
+        && v[3] == 4 && v[4] == 5;
+}
+
+bool testIteratorInsertEmptyRange()
+{
+    topit::Vector<int> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    std::vector<int> src;
+    v.insert(v.begin() + 1, src.begin(), src.end());
+    return v.getSize() == 2 && v[0] == 1 && v[1] == 2;
+}
+
+bool testIteratorInsertFromVector()
+{
+    topit::Vector<int> v;
+    v.pushBack(1);
+    v.pushBack(5);
+    topit::Vector<int> src;
+    src.pushBack(2);
+    src.pushBack(3);
+    src.pushBack(4);
+    v.insert(v.begin() + 1, src.begin(), src.end());
+    return v.getSize() == 5
+        && v[0] == 1 && v[1] == 2 && v[2] == 3
+        && v[3] == 4 && v[4] == 5;
+}
+
+bool testIteratorBeginEnd()
+{
+    topit::Vector<int> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    int sum = 0;
+    for (auto it = v.begin(); it != v.end(); ++it) {
+        sum += *it;
+    }
+    return sum == 6;
+}
+
+bool testConstIterator()
+{
+    topit::Vector<int> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    const topit::Vector<int>& cv = v;
+    int sum = 0;
+    for (auto it = cv.cbegin(); it != cv.cend(); ++it) {
+        sum += *it;
+    }
+    return sum == 6;
+}
+
+bool testReverseIteration()
+{
+    topit::Vector<int> v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    int expected = 3;
+    for (auto it = v.end() - 1; it >= v.begin(); --it) {
+        if (*it != expected) {
+            return false;
+        }
+        --expected;
+    }
+    return true;
+}
+
+//  Тесты строгой гарантии 
 
 struct ThrowAfter {
     static int countdown;
@@ -398,10 +511,37 @@ bool testInsertRangeStrongGuarantee()
         && v[2].value == 3;
 }
 
+bool testIteratorInsertStrongGuarantee()
+{
+    topit::Vector<ThrowAfter> v;
+    v.pushBack(ThrowAfter(1));
+    v.pushBack(ThrowAfter(2));
+    v.pushBack(ThrowAfter(3));
+    std::vector<ThrowAfter> src;
+    src.push_back(ThrowAfter(10));
+    src.push_back(ThrowAfter(11));
+    src.push_back(ThrowAfter(12));
+    ThrowAfter::countdown = 5;
+    bool caught = false;
+    try {
+        v.insert(v.begin() + 1, src.begin(), src.end());
+    } catch (const std::runtime_error&) {
+        caught = true;
+    }
+    if (!caught) {
+        return false;
+    }
+    return v.getSize() == 3
+        && v[0].value == 1
+        && v[1].value == 2
+        && v[2].value == 3;
+}
+
 int main()
 {
     using test_t = std::pair<const char*, bool(*)()>;
     test_t tests[] = {
+        
         {"Empty vector", testEmptyVector},
         {"Size of vector", testGetSize},
         {"Capacity of vector", testGetCapacity},
@@ -422,7 +562,7 @@ int main()
         {"Erase middle", testEraseMiddle},
         {"Erase last", testEraseLast},
         {"Erase out of range", testEraseOutOfRange},
-        // Тесты диапазонов
+        // Тесты диапазонов (классная работа)
         {"Insert range at begin", testInsertRangeAtBegin},
         {"Insert range in middle", testInsertRangeInMiddle},
         {"Insert range at end", testInsertRangeAtEnd},
@@ -432,12 +572,24 @@ int main()
         {"Erase range middle", testEraseRangeMiddle},
         {"Erase range empty", testEraseRangeEmpty},
         {"Erase range bad range", testEraseRangeBadRange},
-        {"Insert range strong guarantee", testInsertRangeStrongGuarantee}
+        {"Insert range strong guarantee", testInsertRangeStrongGuarantee},
+        // Тесты итераторов (домашка)
+        {"Iterator insert at begin", testIteratorInsertAtBegin},
+        {"Iterator insert at middle", testIteratorInsertAtMiddle},
+        {"Iterator insert at end", testIteratorInsertAtEnd},
+        {"Iterator insert multiple", testIteratorInsertMultiple},
+        {"Iterator insert empty range", testIteratorInsertEmptyRange},
+        {"Iterator insert from Vector", testIteratorInsertFromVector},
+        {"Iterator begin/end", testIteratorBeginEnd},
+        {"Const iterator", testConstIterator},
+        {"Reverse iteration", testReverseIteration},
+        {"Iterator insert strong guarantee", testIteratorInsertStrongGuarantee}
     };
 
     const size_t count = sizeof(tests) / sizeof(test_t);
     size_t passed = 0;
     size_t failed = 0;
+
 
     for (size_t i = 0; i < count; ++i) {
         bool res = tests[i].second();

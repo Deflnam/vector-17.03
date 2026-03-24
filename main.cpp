@@ -225,5 +225,194 @@ namespace {
     }
   }
 
+    bool testInsertRangeAtBegin()
+  {
+    topit::Vector< int > v;
+    v.pushBack(4);
+    v.pushBack(5);
+    topit::Vector< int > src;
+    src.pushBack(1);
+    src.pushBack(2);
+    src.pushBack(3);
+    v.insert(0, src, 0, 3);
+    return v.getSize() == 5
+        && v[0] == 1 && v[1] == 2 && v[2] == 3
+        && v[3] == 4 && v[4] == 5;
+  }
+
+  bool testInsertRangeInMiddle()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(5);
+    topit::Vector< int > src;
+    src.pushBack(2);
+    src.pushBack(3);
+    src.pushBack(4);
+    v.insert(1, src, 0, 3);
+    return v.getSize() == 5
+        && v[0] == 1 && v[1] == 2 && v[2] == 3
+        && v[3] == 4 && v[4] == 5;
+  }
+
+  bool testInsertRangeAtEnd()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    topit::Vector< int > src;
+    src.pushBack(3);
+    src.pushBack(4);
+    src.pushBack(5);
+    v.insert(2, src, 0, 3);
+    return v.getSize() == 5
+        && v[0] == 1 && v[1] == 2 && v[2] == 3
+        && v[3] == 4 && v[4] == 5;
+  }
+
+  bool testInsertRangePartial()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(5);
+    topit::Vector< int > src;
+    src.pushBack(0);
+    src.pushBack(2);
+    src.pushBack(3);
+    src.pushBack(4);
+    src.pushBack(9);
+    v.insert(1, src, 1, 4);
+    return v.getSize() == 5
+        && v[0] == 1 && v[1] == 2 && v[2] == 3
+        && v[3] == 4 && v[4] == 5;
+  }
+
+  bool testInsertRangeBadRange()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    topit::Vector< int > src;
+    src.pushBack(10);
+    try {
+      v.insert(0, src, 1, 0);
+      return false;
+    } catch (const std::out_of_range &) {
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }
+
+  struct ThrowAfter {
+    static int countdown;
+    int value;
+
+    ThrowAfter():
+      value(0)
+    {}
+
+    explicit ThrowAfter(int v):
+      value(v)
+    {}
+
+    ThrowAfter(const ThrowAfter & rhs)
+    {
+      if (countdown > 0 && --countdown == 0) {
+        throw std::runtime_error("ThrowAfter copy");
+      }
+      value = rhs.value;
+    }
+
+    ThrowAfter & operator=(const ThrowAfter & rhs)
+    {
+      if (countdown > 0 && --countdown == 0) {
+        throw std::runtime_error("ThrowAfter assign");
+      }
+      value = rhs.value;
+      return *this;
+    }
+
+    bool operator==(const ThrowAfter & rhs) const
+    {
+      return value == rhs.value;
+    }
+  };
+
+  int ThrowAfter::countdown = 0;
+
+  bool testInsertRangeStrongGuarantee()
+  {
+    topit::Vector< ThrowAfter > v;
+    v.pushBack(ThrowAfter(1));
+    v.pushBack(ThrowAfter(2));
+    v.pushBack(ThrowAfter(3));
+    topit::Vector< ThrowAfter > src;
+    src.pushBack(ThrowAfter(10));
+    src.pushBack(ThrowAfter(11));
+    src.pushBack(ThrowAfter(12));
+    ThrowAfter::countdown = 5;
+    bool caught = false;
+    try {
+      v.insert(1, src, 0, 3);
+    } catch (const std::runtime_error &) {
+      caught = true;
+    }
+    if (!caught) {
+      return false;
+    }
+    return v.getSize() == 3
+        && v[0].value == 1
+        && v[1].value == 2
+        && v[2].value == 3;
+  }
+
+  bool testEraseRangeAll()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.erase(0, 3);
+    return v.isEmpty();
+  }
+
+  bool testEraseRangeMiddle()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.pushBack(4);
+    v.pushBack(5);
+    v.erase(1, 4);
+    return v.getSize() == 2
+        && v[0] == 1
+        && v[1] == 5;
+  }
+
+  bool testEraseRangeBadRange()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    try {
+      v.erase(2, 1);
+      return false;
+    } catch (const std::out_of_range &) {
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }
+
+  bool testEraseRangeStrongGuarantee()
+  {
+    topit::Vector< ThrowAfter > v;
+    v.pushBack(ThrowAfter(1));
+    v.pushBack(ThrowAfter(2));
+    v.pushBack(ThrowAfter(3));
+    v.pushBack(ThrowAfter(4));
+    ThrowAfter::countdown = 1;
+    bool caught = false
 
 }

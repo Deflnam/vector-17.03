@@ -36,6 +36,10 @@ public:
     void insert(size_t i, const T& v);
     void erase(size_t i);
 
+    // Классная работа: методы работы с диапазонами
+    void insert(size_t i, const Vector& rhs, size_t start, size_t end);
+    void erase(size_t start, size_t end);
+
 private:
     T* data_;
     size_t size_;
@@ -237,6 +241,51 @@ void topit::Vector<T>::erase(size_t i)
     --size_;
 }
 
+// Классная работа: вставка диапазона из другого вектора
+template <class T>
+void topit::Vector<T>::insert(size_t i, const Vector& rhs, size_t start, size_t end)
+{
+    if (i > size_) {
+        throw std::out_of_range("Vector::insert range: position out of range");
+    }
+    if (start > end || end > rhs.size_) {
+        throw std::out_of_range("Vector::insert range: bad source range");
+    }
+    size_t count = end - start;
+    if (count == 0) {
+        return;
+    }
+
+    Vector tmp(size_ + count);
+    for (size_t k = 0; k < i; ++k) {
+        tmp.data_[k] = std::move(data_[k]);
+    }
+    for (size_t k = 0; k < count; ++k) {
+        tmp.data_[i + k] = rhs.data_[start + k];
+    }
+    for (size_t k = i; k < size_; ++k) {
+        tmp.data_[k + count] = std::move(data_[k]);
+    }
+    swap(tmp);
+}
+
+// Классная работа: удаление диапазона
+template <class T>
+void topit::Vector<T>::erase(size_t start, size_t end)
+{
+    if (start > end || end > size_) {
+        throw std::out_of_range("Vector::erase range: bad range");
+    }
+    size_t count = end - start;
+    if (count == 0) {
+        return;
+    }
+    for (size_t k = end; k < size_; ++k) {
+        data_[k - count] = std::move(data_[k]);
+    }
+    size_ -= count;
+}
+
 template <class T>
 bool topit::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
 {
@@ -251,4 +300,4 @@ bool topit::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
     return true;
 }
 
-#endif  
+#endif 

@@ -101,4 +101,29 @@ namespace {
       return false;
     }
   }
+    bool testMoveConstructor()
+  {
+    topit::Vector< int > v;
+    v.pushBack(10);
+    v.pushBack(20);
+    const topit::Vector< int > moved(std::move(v));
+    return moved.getSize() == 2
+        && moved[0] == 10
+        && moved[1] == 20
+        && v.isEmpty();
+  }
+
+  bool testMoveAssignment()
+  {
+    topit::Vector< int > v;
+    v.pushBack(5);
+    v.pushBack(6);
+    topit::Vector< int > target;
+    target = std::move(v);
+    return target.getSize() == 2
+        && target[0] == 5
+        && target[1] == 6
+        && v.isEmpty();
+  }
+
 }

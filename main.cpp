@@ -125,5 +125,105 @@ namespace {
         && target[1] == 6
         && v.isEmpty();
   }
+    bool testInsertAtBegin()
+  {
+    topit::Vector< int > v;
+    v.pushBack(2);
+    v.pushBack(3);
+    v.insert(0, 1);
+    return v.getSize() == 3
+        && v[0] == 1
+        && v[1] == 2
+        && v[2] == 3;
+  }
+
+  bool testInsertAtMiddle()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(3);
+    v.insert(1, 2);
+    return v.getSize() == 3
+        && v[0] == 1
+        && v[1] == 2
+        && v[2] == 3;
+  }
+
+  bool testInsertAtEnd()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.insert(2, 3);
+    return v.getSize() == 3
+        && v[0] == 1
+        && v[1] == 2
+        && v[2] == 3;
+  }
+
+  bool testInsertOutOfRange()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    try {
+      v.insert(5, 99);
+      return false;
+    } catch (const std::out_of_range &) {
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }
+
+  bool testEraseFirst()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.erase(0);
+    return v.getSize() == 2
+        && v[0] == 2
+        && v[1] == 3;
+  }
+
+  bool testEraseMiddle()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.erase(1);
+    return v.getSize() == 2
+        && v[0] == 1
+        && v[1] == 3;
+  }
+
+  bool testEraseLast()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    v.pushBack(2);
+    v.pushBack(3);
+    v.erase(2);
+    return v.getSize() == 2
+        && v[0] == 1
+        && v[1] == 2;
+  }
+
+  bool testEraseOutOfRange()
+  {
+    topit::Vector< int > v;
+    v.pushBack(1);
+    try {
+      v.erase(5);
+      return false;
+    } catch (const std::out_of_range &) {
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }
+
 
 }

@@ -27,13 +27,12 @@ namespace topit
     void insert(size_t i, const T& v);
     void erase(size_t i);
 
-    template< class T >
-    bool operator==(const Vector< T >& lhs, const Vector< T > & rhs);
-
   private:
     T* data_;
     size_t size_, capacity_;
   };
+  template< class T >
+  bool operator==(const Vector< T >& lhs, const Vector< T > & rhs);
 }
 
 template< class T >
@@ -50,6 +49,14 @@ topit::Vector< T >::Vector():
 template< class T >
 topit::Vector< T >::Vector(const Vector< T > & rhs)
 {}
+
+template< class T >
+bool topit::operator==(const Vector< T >& lhs, const Vector< T > & rhs)
+{
+  bool isEqual = lhs.getSize() == rhs.getSize();
+  for (size_t i = 0; (i < lhs.getSize()) && (isEqual = isEqual && lhs[i] == rhs[i]); ++i);
+  return isEqual;
+}
 
 template< class T >
 bool topit::Vector< T >::isEmpty() const noexcept

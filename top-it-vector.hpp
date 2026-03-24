@@ -22,7 +22,6 @@ namespace topit
     T& at(size_t id);
     const T& at(size_t id) const;
 
-
     void pushBack(const T& v);
     void popBack();
     void insert(size_t i, const T& v);
@@ -43,9 +42,7 @@ topit::Vector< T >::~Vector()
 template< class T >
 topit::Vector< T >::Vector():
   data_(nullptr), size_(0), capacity_(0)
-{
-
-}
+{}
 
 template< class T >
 bool topit::Vector< T >::isEmpty() const noexcept
@@ -65,24 +62,33 @@ size_t topit::Vector< T >::getCapacity() const noexcept
   return capacity_;
 }
 
-template<class T>
-T& topit::Vector<T>::at(size_t id)
+template< class T >
+T& topit::Vector< T >::operator[](size_t id) noexcept
 {
-  if(id<getSize())
-  {
-    return data_[id];
-  }
-  throw std::range_error("bad id");
+  return data_[id];
 }
 
-template<class T>
-const T& topit::Vector<T>::at(size_t id) const
+template< class T >
+const T& topit::Vector< T >::operator[](size_t id) const noexcept
 {
-  if(id<getSize())
+  return data_[id];
+}
+
+template< class T >
+T& topit::Vector< T >::at(size_t id)
+{
+  const Vector< T >* cthis = this;
+  return const_cast< T& >(cthis->at(id));
+}
+
+template< class T >
+const T& topit::Vector< T >::at(size_t id) const
+{
+  if (id < getSize())
   {
     return data_[id];
   }
-  throw std::range_error("bad id");
+  throw std::out_of_range("bad id");
 }
 
 template< class T >

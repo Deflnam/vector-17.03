@@ -11,7 +11,7 @@ namespace topit {
 template <class T>
 class Vector {
 public:
-    // Итераторы
+    //(ДЗ)
     struct Iterator {
         using iterator_category = std::random_access_iterator_tag;
         using value_type = T;
@@ -192,30 +192,35 @@ public:
     using iterator = Iterator;
     using const_iterator = ConstIterator;
 
+    // ============== ОСНОВНЫЕ МЕТОДЫ ==============
     ~Vector();
     Vector();
     Vector(const Vector& rhs);
     Vector(Vector&& rhs) noexcept;
     explicit Vector(size_t size);
     Vector(size_t size, const T& init);
+    Vector(std::initializer_list<T> il);  // КЛАССНАЯ РАБОТА
 
     Vector& operator=(const Vector& rhs);
     Vector& operator=(Vector&& rhs) noexcept;
 
-  
     void swap(Vector& rhs) noexcept;
 
     bool isEmpty() const noexcept;
     size_t getSize() const noexcept;
     size_t getCapacity() const noexcept;
 
-    // Доступ к элементам
+    // КЛАССНАЯ РАБОТА
+    void reserve(size_t required);
+    void shrinkToFit();
+
+   
     T& operator[](size_t id) noexcept;
     const T& operator[](size_t id) const noexcept;
     T& at(size_t id);
     const T& at(size_t id) const;
 
-    // Итераторы
+   
     iterator begin() noexcept;
     iterator end() noexcept;
     const_iterator begin() const noexcept;
@@ -223,17 +228,21 @@ public:
     const_iterator cbegin() const noexcept;
     const_iterator cend() const noexcept;
 
-    // Основные операции
+   
     void pushBack(const T& v);
+    void pushBackCount(size_t k, const T& v);  // КЛАССНАЯ РАБОТА
+    template <class IT>
+    void pushBackRange(IT b, size_t c);        // КЛАССНАЯ РАБОТА
     void popBack();
-    void insert(size_t i, const T& v);
-    void erase(size_t i);
 
-    // Классная работа: методы работы с диапазонами
+    void insert(size_t i, const T& v);         // КЛАССНАЯ РАБОТА
+    void erase(size_t i);                      // КЛАССНАЯ РАБОТА
+
+    //  МЕТОДЫ РАБОТЫ С ДИАПАЗОНАМИ (КЛАССНАЯ РАБОТА) 
     void insert(size_t i, const Vector& rhs, size_t start, size_t end);
     void erase(size_t start, size_t end);
 
-    // Домашка: итераторный insert
+    //  ИТЕРАТОРНЫЙ INSERT (ДЗ) 
     template <class FwdIterator>
     void insert(iterator pos, FwdIterator first, FwdIterator last);
 
@@ -244,6 +253,7 @@ private:
 
     void rangeCheck(size_t id) const;
     void reallocate(size_t newCap);
+    void unsafePushBack(const T& v);
 };
 
 template <class T>
@@ -271,6 +281,17 @@ topit::Vector<T>::Vector(size_t size, const T& init)
 {
     for (size_t i = 0; i < size_; ++i) {
         data_[i] = init;
+    }
+}
+
+// КЛАССНАЯ РАБОТА
+template <class T>
+topit::Vector<T>::Vector(std::initializer_list<T> il)
+    : Vector(il.size())
+{
+    size_t i = 0;
+    for (const T& val : il) {
+        data_[i++] = val;
     }
 }
 
@@ -346,6 +367,24 @@ size_t topit::Vector<T>::getCapacity() const noexcept
     return capacity_;
 }
 
+// КЛАССНАЯ РАБОТА
+template <class T>
+void topit::Vector<T>::reserve(size_t required)
+{
+    if (required > capacity_) {
+        reallocate(required);
+    }
+}
+
+// КЛАССНАЯ РАБОТА
+template <class T>
+void topit::Vector<T>::shrinkToFit()
+{
+    if (size_ < capacity_) {
+        reallocate(size_);
+    }
+}
+
 template <class T>
 T& topit::Vector<T>::operator[](size_t id) noexcept
 {
@@ -380,16 +419,34 @@ const T& topit::Vector<T>::at(size_t id) const
     return data_[id];
 }
 
+// ВСПОМОГАТЕЛЬНЫЙ МЕТОД
 template <class T>
 void topit::Vector<T>::reallocate(size_t newCap)
 {
     T* newData = new T[newCap];
-    for (size_t i = 0; i < size_; ++i) {
-        newData[i] = std::move(data_[i]);
+    size_t i = 0;
+    try {
+        for (; i < size_; ++i) {
+            newData[i] = std::move(data_[i]);
+        }
+    } catch (...) {
+        for (size_t j = 0; j < i; ++j) {
+            newData[j].~T();
+        }
+        delete[] newData;
+        throw;
     }
     delete[] data_;
     data_ = newData;
     capacity_ = newCap;
+}
+
+// ВСПОМОГАТЕЛЬНЫЙ МЕТОД
+template <class T>
+void topit::Vector<T>::unsafePushBack(const T& v)
+{
+    data_[size_] = v;
+    ++size_;
 }
 
 template <class T>
@@ -397,10 +454,50 @@ void topit::Vector<T>::pushBack(const T& v)
 {
     if (size_ == capacity_) {
         size_t newCap = (capacity_ == 0) ? 1 : capacity_ * 2;
-        reallocate(newCap);
+        reserve(newCap);
     }
-    data_[size_] = v;
-    ++size_;
+    unsafePushBack(v);
+}
+
+// КЛАССНАЯ РАБОТА
+template <class T>
+void topit::Vector<T>::pushBackCount(size_t k, const T& v)
+{
+    if (k == 0) return;
+    
+    size_t newSize = size_ + k;
+    if (newSize > capacity_) {
+        size_t newCap = capacity_ == 0 ? 1 : capacity_;
+        while (newCap < newSize) {
+            newCap *= 2;
+        }
+        reserve(newCap);
+    }
+    
+    for (size_t i = 0; i < k; ++i) {
+        unsafePushBack(v);
+    }
+}
+
+// КЛАССНАЯ РАБОТА
+template <class T>
+template <class IT>
+void topit::Vector<T>::pushBackRange(IT b, size_t c)
+{
+    if (c == 0) return;
+    
+    size_t newSize = size_ + c;
+    if (newSize > capacity_) {
+        size_t newCap = capacity_ == 0 ? 1 : capacity_;
+        while (newCap < newSize) {
+            newCap *= 2;
+        }
+        reserve(newCap);
+    }
+    
+    for (size_t i = 0; i < c; ++i) {
+        unsafePushBack(*(b + i));
+    }
 }
 
 template <class T>
@@ -411,6 +508,7 @@ void topit::Vector<T>::popBack()
     }
 }
 
+// КЛАССНАЯ РАБОТА
 template <class T>
 void topit::Vector<T>::insert(size_t i, const T& v)
 {
@@ -419,7 +517,7 @@ void topit::Vector<T>::insert(size_t i, const T& v)
     }
     if (size_ == capacity_) {
         size_t newCap = (capacity_ == 0) ? 1 : capacity_ * 2;
-        reallocate(newCap);
+        reserve(newCap);
     }
     for (size_t k = size_; k > i; --k) {
         data_[k] = std::move(data_[k - 1]);
@@ -428,6 +526,7 @@ void topit::Vector<T>::insert(size_t i, const T& v)
     ++size_;
 }
 
+// КЛАССНАЯ РАБОТА
 template <class T>
 void topit::Vector<T>::erase(size_t i)
 {
@@ -438,44 +537,49 @@ void topit::Vector<T>::erase(size_t i)
     --size_;
 }
 
-// Итераторы
+// ДЗ
 template <class T>
 typename topit::Vector<T>::iterator topit::Vector<T>::begin() noexcept
 {
     return iterator(data_);
 }
 
+// ДЗ
 template <class T>
 typename topit::Vector<T>::iterator topit::Vector<T>::end() noexcept
 {
     return iterator(data_ + size_);
 }
 
+// ДЗ
 template <class T>
 typename topit::Vector<T>::const_iterator topit::Vector<T>::begin() const noexcept
 {
     return const_iterator(data_);
 }
 
+// ДЗ
 template <class T>
 typename topit::Vector<T>::const_iterator topit::Vector<T>::end() const noexcept
 {
     return const_iterator(data_ + size_);
 }
 
+// ДЗ
 template <class T>
 typename topit::Vector<T>::const_iterator topit::Vector<T>::cbegin() const noexcept
 {
     return const_iterator(data_);
 }
 
+// ДЗ
 template <class T>
 typename topit::Vector<T>::const_iterator topit::Vector<T>::cend() const noexcept
 {
     return const_iterator(data_ + size_);
 }
 
-// Классная работа: вставка диапазона из другого вектора
+// КЛАССНАЯ РАБОТА
 template <class T>
 void topit::Vector<T>::insert(size_t i, const Vector& rhs, size_t start, size_t end)
 {
@@ -503,7 +607,7 @@ void topit::Vector<T>::insert(size_t i, const Vector& rhs, size_t start, size_t 
     swap(tmp);
 }
 
-// Классная работа: удаление диапазона
+// КЛАССНАЯ РАБОТА
 template <class T>
 void topit::Vector<T>::erase(size_t start, size_t end)
 {
@@ -520,7 +624,7 @@ void topit::Vector<T>::erase(size_t start, size_t end)
     size_ -= count;
 }
 
-// Домашка: вставка диапазона из произвольного итератора
+// ДЗ
 template <class T>
 template <class FwdIterator>
 void topit::Vector<T>::insert(iterator pos, FwdIterator first, FwdIterator last)
@@ -562,4 +666,4 @@ bool topit::operator==(const Vector<T>& lhs, const Vector<T>& rhs)
     return true;
 }
 
-#endif  
+#endif

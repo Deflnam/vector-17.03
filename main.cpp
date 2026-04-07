@@ -216,8 +216,6 @@ bool testEraseOutOfRange()
     }
 }
 
-// Тесты диапазонов (классная работа) 
-
 bool testInsertRangeAtBegin()
 {
     topit::Vector<int> v;
@@ -342,8 +340,6 @@ bool testEraseRangeBadRange()
     }
 }
 
-// Тесты итераторов (домашка) 
-
 bool testIteratorInsertAtBegin()
 {
     topit::Vector<int> v;
@@ -454,8 +450,6 @@ bool testReverseIteration()
     return true;
 }
 
-//  Тесты строгой гарантии 
-
 struct ThrowAfter {
     static int countdown;
     int value;
@@ -541,7 +535,6 @@ int main()
 {
     using test_t = std::pair<const char*, bool(*)()>;
     test_t tests[] = {
-        
         {"Empty vector", testEmptyVector},
         {"Size of vector", testGetSize},
         {"Capacity of vector", testGetCapacity},
@@ -553,7 +546,6 @@ int main()
         {"Copy non-empty vector", testCopyConstructorForNonEmpty},
         {"Move constructor", testMoveConstructor},
         {"Move assignment", testMoveAssignment},
-        // Одиночные insert/erase
         {"Insert at begin", testInsertAtBegin},
         {"Insert at middle", testInsertAtMiddle},
         {"Insert at end", testInsertAtEnd},
@@ -562,7 +554,6 @@ int main()
         {"Erase middle", testEraseMiddle},
         {"Erase last", testEraseLast},
         {"Erase out of range", testEraseOutOfRange},
-        // Тесты диапазонов (классная работа)
         {"Insert range at begin", testInsertRangeAtBegin},
         {"Insert range in middle", testInsertRangeInMiddle},
         {"Insert range at end", testInsertRangeAtEnd},
@@ -573,7 +564,6 @@ int main()
         {"Erase range empty", testEraseRangeEmpty},
         {"Erase range bad range", testEraseRangeBadRange},
         {"Insert range strong guarantee", testInsertRangeStrongGuarantee},
-        // Тесты итераторов (домашка)
         {"Iterator insert at begin", testIteratorInsertAtBegin},
         {"Iterator insert at middle", testIteratorInsertAtMiddle},
         {"Iterator insert at end", testIteratorInsertAtEnd},
@@ -589,7 +579,6 @@ int main()
     const size_t count = sizeof(tests) / sizeof(test_t);
     size_t passed = 0;
     size_t failed = 0;
-
 
     for (size_t i = 0; i < count; ++i) {
         bool res = tests[i].second();
